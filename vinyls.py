@@ -107,7 +107,7 @@ row2_space1, row2_center, ro2_space2 = st.columns((2,4,1))
 with row2_center:
     st.write(f"Discs archieved between {start_date_bar} & {end_date_bar}")
     
-c1 = alt.Chart(date_range_bar).mark_bar().encode(
+c1 = alt.Chart(date_range_bar).mark_bar(size=3).encode(
     alt.X('Date', title="Date"),
     alt.Y("Records", title="Records Per Day"),
     tooltip=['Date', 'Records'],
@@ -123,11 +123,10 @@ df_records_per_day['Total'] = df_records_per_day['Records'].cumsum()
 
 
 
-bar = alt.Chart(df_records_per_day).mark_bar(size=12).encode(
+bar = alt.Chart(df_records_per_day).mark_bar(size=10).encode(
     alt.X('Date',axis=alt.Axis(
         title='Date',
         format=("%b %d"),
-        # tickCount = {"interval": "month", "step": 3}
         )),
     alt.Y('Total:Q', title='Total'),
     tooltip=['Date', 'Total'],
