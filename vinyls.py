@@ -141,7 +141,7 @@ line = alt.Chart(df_records_per_day).mark_line(color='red').transform_window(
 row3_space1, row3_center, ro3_space2 = st.columns((4,5,1))
 with row3_center:
     st.write("Collection Growth")
-c2 = bar + line
+c2 = (bar+line).properties(width=600)
 st.altair_chart(c2, use_container_width=True)
 
 
