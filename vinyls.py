@@ -32,6 +32,13 @@ st.markdown("<h1 style='text-align: center; color: #CEA49C;'>The Great Vinyl Col
 # Load data
 df = load_data()
 
+total_discs = len(df)
+
+st.sidebar.markdown(f'<h1 style="font-size: 40px; text-align: right; color: #E9DFCA;"> {total_discs} \
+                    <p style="font-size: 16px; color: #CEA49C;">discs</p>\
+                    <p style="font-size: 14px; text-align: right; color: #CEA49C"><em>...and counting</em></p> </h1> \
+                    ',unsafe_allow_html=True)
+
 if st.checkbox('Show Collection'):
     df
 
@@ -41,7 +48,6 @@ if st.checkbox('Show Collection'):
 #                  &_nc_sid=973b4a&_nc_ohc=qqmyh40bN54AX91AxBh&_nc_ht=scontent.fath\
 #                  3-3.fna&oh=00_AT90x3GHYOuUYAhRYIkPi9T7YGDvgTR6DfkltSlXVxkBsw&oe=61FA2A9E')
 st.sidebar.markdown('<h1 style="color:#CEA49C;">Filter the data as you please.</h1>',unsafe_allow_html=True)
-
 
 
 # Pie chart --------------------------------------------
