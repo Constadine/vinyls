@@ -105,7 +105,7 @@ if max(counts_values_genres) > 100:
     count_genres.sort_index(inplace=True)
 
 fig_discs_per_genre = px.bar(count_genres, x='Genre', y='Discs', 
-                             title=f"Discs in collection - produced per Country between {start_date_pie}-{end_date_pie}",
+                             title=f"Discs in collection by Genre between {start_date_pie}-{end_date_pie}",
                              color_discrete_sequence=px.colors.qualitative.Antique,
                              color='Genre')
 
