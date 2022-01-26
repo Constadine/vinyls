@@ -15,7 +15,7 @@ import altair as alt
 @st.cache
 def load_data():
     
-    data = pd.read_excel('./jupyter/gopera_collection.xlsx',parse_dates= ['Date Added'])
+    data = pd.read_excel('./jupyter/gopera_collection_26-1-22.xlsx',parse_dates= ['Date Added'])
     data['Date Added'] = pd.to_datetime(data['Date Added'],infer_datetime_format=True, errors='coerce').dt.date
 
     return data
@@ -51,42 +51,71 @@ st.sidebar.markdown('<h1 style="color:#CEA49C;">Filter the data as you please.</
 
 
 # Pie chart --------------------------------------------
-df = df[df['Released'] != 0]
-min_date_pie = int(df['Released'].min())
-max_date_pie = int(df['Released'].max())
+filtered_df = df[df['Released'] != 0]
+min_date_pie = int(filtered_df['Released'].min())
+max_date_pie = int(filtered_df['Released'].max())
 
 start_date_pie, end_date_pie = st.sidebar.slider(
-    'Chronological range for Pie Chart to consider:', 
+    'Chronological range for Pie Chart and Genre Bar Chart to consider:', 
     min_date_pie, max_date_pie, (min_date_pie,max_date_pie))
 filtered_df = df[df['Released'].between(start_date_pie,end_date_pie)]
 
 
-counts_df = filtered_df['Country'].value_counts().to_frame()
-counts_df.reset_index(inplace=True)
-counts_df.rename(columns={'index':'Country', 'Country': 'Discs'},inplace=True)
+count_countries = filtered_df['Country'].value_counts().to_frame()
+count_countries.reset_index(inplace=True)
+count_countries.rename(columns={'index':'Country', 'Country': 'Discs'},inplace=True)
 
 other_counts = 0
-counts_values = list(counts_df['Discs'])
-if max(counts_values) > 100:
-    for value in counts_values:
+counts_values_countries = list(count_countries['Discs'])
+if max(counts_values_countries) > 100:
+    for value in counts_values_countries:
         if value < 5:
             other_counts += value
     
-    counts_df = counts_df[counts_df['Discs'] > 30]
-    counts_df.loc[-1] = ['Other', other_counts]
-    counts_df.index = counts_df.index + 1
-    counts_df.sort_index(inplace=True)
+    count_countries = count_countries[count_countries['Discs'] > 30]
+    count_countries.loc[-1] = ['Other', other_counts]
+    count_countries.index = count_countries.index + 1
+    count_countries.sort_index(inplace=True)
 
-fig_discs_per_country = px.pie(counts_df, values='Discs', names='Country',
+fig_discs_per_country = px.pie(count_countries, values='Discs', names='Country',
              title=f"Discs in collection - produced per Country between {start_date_pie}-{end_date_pie}",
              color_discrete_sequence=px.colors.qualitative.Antique)
 fig_discs_per_country.update_traces(textinfo='percent+label')
 
-row1_space1, row1_center, row1_space2 = st.columns((1,4,1))
+count_genres = filtered_df['Genre'].value_counts().to_frame()
+count_genres.reset_index(inplace=True)
+count_genres.rename(columns={'index':'Genre', 'Genre': 'Discs'},inplace=True)
 
-with row1_center:
+show_min_genre = st.sidebar.number_input(label=f"Select minimum amount of discs to consider for each genre ({count_genres['Discs'].min()} - {count_genres['Discs'].max()}).",
+                                         value = 20,
+                                      min_value = count_genres['Discs'].min(),
+                                      max_value = count_genres['Discs'].max())
+
+other_counts = 0    
+counts_values_genres = list(count_genres['Discs'])
+
+if max(counts_values_genres) > 100:
+    for value in counts_values_genres:
+        if value < 5:
+            other_counts += value
+    
+    count_genres = count_genres[count_genres['Discs'] > show_min_genre]
+    count_genres.loc[-1] = ['Other', other_counts]
+    count_genres.index = count_genres.index + 1
+    count_genres.sort_index(inplace=True)
+
+fig_discs_per_genre = px.bar(count_genres, x='Genre', y='Discs', 
+                             title=f"Discs in collection - produced per Country between {start_date_pie}-{end_date_pie}",
+                             color_discrete_sequence=px.colors.qualitative.Antique,
+                             color='Genre')
+
+
+row1_left, row1_right = st.columns((2,2))
+
+with row1_left:
     st.plotly_chart(fig_discs_per_country)
-
+with row1_right:
+    st.plotly_chart(fig_discs_per_genre)
 
 # BarChart for DateAdded --------------------------------------------
 df_records_per_day = pd.DataFrame()
