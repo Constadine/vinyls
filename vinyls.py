@@ -82,6 +82,8 @@ fig_discs_per_country = px.pie(count_countries, values='Discs', names='Country',
              color_discrete_sequence=px.colors.qualitative.Antique)
 fig_discs_per_country.update_traces(textinfo='percent+label')
 
+# Genre BarChart ------------------------------------
+
 count_genres = filtered_df['Genre'].value_counts().to_frame()
 count_genres.reset_index(inplace=True)
 count_genres.rename(columns={'index':'Genre', 'Genre': 'Discs'},inplace=True)
@@ -110,14 +112,17 @@ fig_discs_per_genre = px.bar(count_genres, x='Genre', y='Discs',
                              color='Genre')
 
 
-row1_left, row1_right = st.columns((2,2))
+row1_spacer1, row1_1, row1_spacer3, row1_2, row1_spacer4 = st.columns(
+    (.1, 1.6, .1, 1.6, .1)
+    )
 
-with row1_left:
-    st.plotly_chart(fig_discs_per_country)
-with row1_right:
-    st.plotly_chart(fig_discs_per_genre)
+with row1_1:
+    st.plotly_chart(fig_discs_per_country,use_container_width=True)
+with row1_2:
+    st.plotly_chart(fig_discs_per_genre,use_container_width=True)
 
-# BarChart for DateAdded --------------------------------------------
+# BarChart DateAdded --------------------------------------------
+
 df_records_per_day = pd.DataFrame()
 df_records_per_day['Records'] = df['Date Added'].value_counts()
 df_records_per_day.index.name = 'Date'
@@ -132,7 +137,7 @@ start_date_bar, end_date_bar = st.sidebar.slider(
 )
 date_range_bar = df_records_per_day[df_records_per_day['Date'].between(start_date_bar,end_date_bar)]
 
-row2_space1, row2_center, ro2_space2 = st.columns((2,4,1))
+row2_spacer1, row2_center, ro2_spacer2 = st.columns((2,4,1))
 with row2_center:
     st.write(f"Discs archieved between {start_date_bar} & {end_date_bar}")
     
@@ -172,7 +177,7 @@ line = alt.Chart(df_records_per_day).mark_line(color='red').transform_window(
     y='rolling_mean:Q'
 )
 
-row3_space1, row3_center, ro3_space2 = st.columns((4,5,1))
+row3_spacer1, row3_center, ro3_spacer2 = st.columns((4,5,1))
 with row3_center:
     st.write("Collection Growth")
 c2 = (bar+line).properties(width=600)
