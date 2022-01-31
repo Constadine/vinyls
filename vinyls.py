@@ -10,15 +10,17 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import altair as alt
+import numpy as np
 
 
 @st.cache
 def load_data():
     
-    data = pd.read_excel('./jupyter/gopera_collection_26-1-22.xlsx',parse_dates= ['Date Added'])
-    data['Date Added'] = pd.to_datetime(data['Date Added'],infer_datetime_format=True, errors='coerce').dt.date
+    data1 = pd.read_excel('./jupyter/clean_data.xlsx')
+    data2 = pd.read_excel('./jupyter/gopera_collection_26-1-22.xlsx',parse_dates= ['Date Added'])
+    data2['Date Added'] = pd.to_datetime(data2['Date Added'],infer_datetime_format=True, errors='coerce').dt.date
 
-    return data
+    return data1, data2
 
 
 st.set_page_config(page_title='George Vinyl Collection',
@@ -30,17 +32,18 @@ st.markdown("<h1 style='text-align: center; color: #CEA49C;'>The Great Vinyl Col
 
 
 # Load data
-df = load_data()
+df_main, df_discorgs = load_data()
 
-total_discs = len(df)
+total_discs = len(df_main)
 
 st.sidebar.markdown(f'<h1 style="font-size: 40px; text-align: right; color: #E9DFCA;"> {total_discs} \
                     <p style="font-size: 16px; color: #CEA49C;">discs</p>\
                     <p style="font-size: 14px; text-align: right; color: #CEA49C"><em>...and counting</em></p> </h1> \
                     ',unsafe_allow_html=True)
 
+
 if st.checkbox('Show Collection'):
-    df
+    df_main
 
 # Sidebar --------------------------------------------
 # st.sidebar.image('https://scontent.fath3-3.fna.fbcdn.net/v/t1.18169-9/940994_\
@@ -50,15 +53,16 @@ if st.checkbox('Show Collection'):
 st.sidebar.markdown('<h1 style="color:#CEA49C;">Filter the data as you please.</h1>',unsafe_allow_html=True)
 
 
-# Pie chart --------------------------------------------
-filtered_df = df[df['Released'] != 0]
+# Country PieChart --------------------------------------------
+
+filtered_df = df_main[df_main['Released'] != 0]
 min_date_pie = int(filtered_df['Released'].min())
 max_date_pie = int(filtered_df['Released'].max())
 
 start_date_pie, end_date_pie = st.sidebar.slider(
     'Chronological range for Pie Chart and Genre Bar Chart to consider:', 
     min_date_pie, max_date_pie, (min_date_pie,max_date_pie))
-filtered_df = df[df['Released'].between(start_date_pie,end_date_pie)]
+filtered_df = df_main[df_main['Released'].between(start_date_pie,end_date_pie)]
 
 
 count_countries = filtered_df['Country'].value_counts().to_frame()
@@ -78,8 +82,10 @@ if max(counts_values_countries) > 100:
     count_countries.sort_index(inplace=True)
 
 fig_discs_per_country = px.pie(count_countries, values='Discs', names='Country',
-             title=f"Discs in collection - produced per Country between {start_date_pie}-{end_date_pie}",
              color_discrete_sequence=px.colors.qualitative.Antique)
+fig_discs_per_country.update_layout(title=f"Discs in collection - produced per Country between {start_date_pie}-{end_date_pie}",
+                                    title_xanchor='auto',
+                                    title_pad_r=5)
 fig_discs_per_country.update_traces(textinfo='percent+label')
 
 # Genre BarChart ------------------------------------
@@ -124,12 +130,12 @@ with row1_2:
 # BarChart DateAdded --------------------------------------------
 
 df_records_per_day = pd.DataFrame()
-df_records_per_day['Records'] = df['Date Added'].value_counts()
+df_records_per_day['Records'] = df_discorgs['Date Added'].value_counts()
 df_records_per_day.index.name = 'Date'
 df_records_per_day.reset_index(inplace=True)
 
-min_date_bar = df['Date Added'].min()
-max_date_bar = df['Date Added'].max()
+min_date_bar = df_discorgs['Date Added'].min()
+max_date_bar = df_discorgs['Date Added'].max()
 
 start_date_bar, end_date_bar = st.sidebar.slider(
     'Select range of dates for Bar Chart to consider:',

@@ -5,3 +5,6 @@ primaryColor="#873c37"
 textColor="#e2e2e2"
 font="monospace"
 
+
+[global]
+dataFrameSerialization = "legacy"
