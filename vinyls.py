@@ -10,7 +10,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import altair as alt
-import numpy as np
 
 
 @st.cache
@@ -42,6 +41,18 @@ st.sidebar.markdown(f'<h1 style="font-size: 40px; text-align: right; color: #E9D
                     ',unsafe_allow_html=True)
 
 
+df_nozeros = df_main.loc[df_main.Released != 0]
+oldest = df_nozeros.loc[df_nozeros.Released.idxmin()]
+newest = df_nozeros.loc[df_nozeros.Released.idxmax()]
+
+st.markdown(f"<span style='font-size:25px; color: #BEAFAF'>Newest</span> disc \
+            in collection: <strong>{newest['Title']}</strong> by <strong>{newest['Artist']}</strong>,\
+                <span style='font-size:20px; color: #BEAFAF'>{newest['Released']}</span>", unsafe_allow_html=True)
+
+st.markdown(f"<span style='font-size:25px; color: #927676'>Oldest</span> \
+            disc in collection: <strong>{oldest['Title']}</strong> by <strong>{oldest['Artist']}</strong>, \
+                <span style='font-size:20px; color: #927676'>{oldest['Released']}</span>", unsafe_allow_html=True)
+ 
 if st.checkbox('Show Collection'):
     df_main
 
