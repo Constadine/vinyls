@@ -16,7 +16,7 @@ import altair as alt
 def load_data():
     
     data1 = pd.read_excel('./jupyter/clean_data.xlsx')
-    data2 = pd.read_excel('./jupyter/gopera_collection_26-1-22.xlsx',parse_dates= ['Date Added'])
+    data2 = pd.read_csv('./jupyter/gopera-collection-20220201-1011.csv',parse_dates= ['Date Added'])
     data2['Date Added'] = pd.to_datetime(data2['Date Added'],infer_datetime_format=True, errors='coerce').dt.date
 
     return data1, data2
@@ -41,9 +41,10 @@ st.sidebar.markdown(f'<h1 style="font-size: 40px; text-align: right; color: #E9D
                     ',unsafe_allow_html=True)
 
 
-df_nozeros = df_main.loc[df_main.Released != 0]
-oldest = df_nozeros.loc[df_nozeros.Released.idxmin()]
-newest = df_nozeros.loc[df_nozeros.Released.idxmax()]
+df_no_zero_dates = df_main.loc[df_main.Released != 0]
+oldest = df_no_zero_dates.loc[df_no_zero_dates.Released.idxmin()]
+newest = df_no_zero_dates.loc[df_no_zero_dates.Released.idxmax()]
+average_release_date = int(df_no_zero_dates.Released.mean())
 
 st.markdown(f"<span style='font-size:25px; color: #BEAFAF'>Newest</span> disc \
             in collection: <strong>{newest['Title']}</strong> by <strong>{newest['Artist']}</strong>,\
@@ -52,6 +53,9 @@ st.markdown(f"<span style='font-size:25px; color: #BEAFAF'>Newest</span> disc \
 st.markdown(f"<span style='font-size:25px; color: #927676'>Oldest</span> \
             disc in collection: <strong>{oldest['Title']}</strong> by <strong>{oldest['Artist']}</strong>, \
                 <span style='font-size:20px; color: #927676'>{oldest['Released']}</span>", unsafe_allow_html=True)
+
+st.markdown(f"<span style='font-size:25px; color: #EFDADA'>Average</span> release date: \
+            <span style='font-size:20px; color: #EFDADA'>{average_release_date}</span>", unsafe_allow_html=True)
  
 if st.checkbox('Show Collection'):
     df_main
@@ -105,12 +109,13 @@ count_genres = filtered_df['Genre'].value_counts().to_frame()
 count_genres.reset_index(inplace=True)
 count_genres.rename(columns={'index':'Genre', 'Genre': 'Discs'},inplace=True)
 
-show_min_genre = st.sidebar.number_input(label=f"Select minimum amount of discs to consider for each genre ({count_genres['Discs'].min()} - {count_genres['Discs'].max()}).",
-                                         value = 20,
-                                      min_value = count_genres['Discs'].min(),
-                                      max_value = count_genres['Discs'].max())
+show_min_genre = st.sidebar.number_input(label=f"Select minimum amount of discs to consider for each genre\
+                                    ({count_genres['Discs'].min()} - {count_genres['Discs'].max()}).",   
+                                    min_value = count_genres['Discs'].min(),
+                                    max_value = count_genres['Discs'].max(),
+                                    value = 1 + int(count_genres['Discs'].max() * 0.2))
 
-other_counts = 0    
+other_counts = 0
 counts_values_genres = list(count_genres['Discs'])
 
 if max(counts_values_genres) > 100:
@@ -199,5 +204,3 @@ with row3_center:
     st.write("Collection Growth")
 c2 = (bar+line).properties(width=600)
 st.altair_chart(c2, use_container_width=True)
-
-
