@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import plotly.express as px
+import pycountry
 import altair as alt
 
 # Set up page
@@ -12,7 +13,7 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# 1) Function to clean and rename the data
+#SECTION - Utility Functions
 # --------------------------------------------------
 def clean_data(df: pd.DataFrame):
     """
@@ -80,8 +81,17 @@ def clean_data(df: pd.DataFrame):
     
     return df, duplicates, log_messages
 
+# Helper to convert country names to ISO Alpha-3
+def get_country_code(name):
+    try:
+        return pycountry.countries.lookup(name).alpha_3
+    except:
+        return None
+
+#!SECTION
+
 # --------------------------------------------------
-# 2) Load data from Google Sheets
+# Load data from Google Sheets
 # --------------------------------------------------
 @st.cache_data
 def load_data_from_gsheets():
@@ -96,7 +106,40 @@ def load_data_from_gsheets():
     return raw_df
 
 # --------------------------------------------------
-# 3) Main application
+#SECTION - Visualizations
+# --------------------------------------------------
+
+# Create a map for disc count by country
+def display_choropleth_map(df: pd.DataFrame):
+    st.subheader("🌍 Geographic Spread of the Collection")
+
+    df_map = df[df["date"] != 0].copy()
+    
+    # Convert country names to ISO-3 codes
+    df_map["country_code"] = df_map["country"].apply(get_country_code)
+
+    # Drop rows with unknown country codes
+    df_map = df_map.dropna(subset=["country_code"])
+
+    # Group by country code
+    country_counts = df_map.groupby(["country", "country_code"]).size().reset_index(name="count")
+
+    # Plot choropleth
+    fig = px.choropleth(
+        country_counts,
+        locations="country_code",
+        color="count",
+        hover_name="country",
+        color_continuous_scale="Blues",
+        labels={"count": "Number of Discs"},
+        title="Discs by Country"
+    )
+    fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0})
+
+    st.plotly_chart(fig, use_container_width=True)
+#!SECTION
+# --------------------------------------------------
+#SECTION - Main application
 # --------------------------------------------------
 def main():
     st.markdown("<h1 style='text-align: center; color: #CEA49C;'>The Great Vinyl Collection</h1>", 
@@ -273,8 +316,11 @@ def main():
         with row1_2:
             st.plotly_chart(fig_discs_per_genre, use_container_width=True)
 
+        display_choropleth_map(df_main)
+
     else:
         st.warning("No valid date values in the dataset for visualization.")
+#!SECTION
 
 if __name__ == "__main__":
     main()
